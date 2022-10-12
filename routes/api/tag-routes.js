@@ -15,21 +15,18 @@ router.get('/', async (req, res) => {
   // be sure to include its associated Product data
 });
 
-router.get('/:id', async (req, res) => {
-  try { // find a single tag by its `id`
-    const tagData = await Tag.findOne(req.params.id, {
-      include: [{model: Product}],
-    });
+router.get('/:id', (req, res) => {
+   // find a single tag by its `id`
+    Tag.findOne( {
+      where: {
+        id: req.params.id
+      },
+      include: [{model: Product, through: ProductTag}],
+    })
+    .then((tag) => res.status(200).json(tag))
       // be sure to include its associated Product data
-    if(!tagData) {
-      res.status(404).json({message: 'No tag found with this id'});
-      return;
-    }
-    res.status(200).json(categoryData);
-  } catch (err) {
-    res.status(500).json(err);
-  }
-});
+      .catch((err) => res.status(404).json(err)) 
+    });
 
 router.post('/', async (req, res) => {
   try { // create a new tag
@@ -40,7 +37,7 @@ router.post('/', async (req, res) => {
   }
 });
 
-router.delete('/:id', (req, res) => {
+router.delete('/:id', async (req, res) => {
   try { // delete on tag by its `id` value
     const tagData = await Tag.destroy({
       where: {id: req.params.id}
